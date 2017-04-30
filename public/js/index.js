@@ -2,11 +2,6 @@ let socket = io();
 
 socket.on('connect', function(){
     console.log('User is connected to server via socket...');
-
-    // socket.emit('createMessage',{
-    //   to:'Катя',
-    //   text:'Эгегей, Ара!'
-    // });
 });
 
 socket.on('disconnect', function(){
@@ -14,9 +9,6 @@ socket.on('disconnect', function(){
 });
 
 
-socket.on('newMessageEvent', function(message){
-  // console.log('From:',message.from);
-  // console.log('At:',message.createdAt);
-  // console.log(message.text);
+socket.on('newMessage', function(message){
   console.log(message);
 });

@@ -13,8 +13,16 @@ app.use(express.static(publicPath));
 
 io.on('connection', (socket) =>{
 
-  console.log('We have new connected user over here...');
-  
+  socket.emit('newMessage',
+    {from:'Администратор', text:'Добро пожаловать'}
+  );
+
+  socket.broadcast.emit('newMessage',
+    {from:'Администратор',
+    text:'Новый пользователь присоеденился к комнате',
+    createdAt:new Date().getTime()}
+  );
+
   socket.on('disconnect', () =>{
     console.log('Client has disconnected from server via socket...');
   });
