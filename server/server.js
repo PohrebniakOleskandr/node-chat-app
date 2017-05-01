@@ -14,24 +14,27 @@ app.use(express.static(publicPath));
 
 io.on('connection', (socket) =>{
 
+  console.log('We have new connection of client');
   /*При подключении юзера отправляем ему сообщение от админа*/
   socket.emit('newMessage',
-    generateMessage('Администратор','Добро пожаловать в наш уютный чатик')
+    generateMessage('Administrator','Welcome to our chat, a new client')
   );
 
   /*Так же отправляем через его сокет всем кроме него сообщение*/
   socket.broadcast.emit('newMessage',
-    generateMessage('Администратор','Новый пользователь присоеденился к комнате')
+    generateMessage('Administrator','A new client has connected to our chat')
   );
 
   /*В случае, если он ушел - сообщаем это в консоль*/
   socket.on('disconnect', () =>{
-    console.log('Client has disconnected from server via socket...');
+    console.log('Client has disconnected from server via socket');
   });
 
   /*В случае, если он написал, то отправить сообщение всем*/
-  socket.on('createMessage', (message) =>{
+  socket.on('createMessage', (message,callback) =>{
+    console.log('Client has sent a message to others');
     io.emit('newMessage', generateMessage(message.from,message.text));
+    callback('A message is successfuly sent to the sever');
   });
 
 });
