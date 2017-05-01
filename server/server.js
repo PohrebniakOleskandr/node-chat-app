@@ -8,28 +8,30 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 const port = process.env.PORT || 3000;
+const {generateMessage} = require('./utils/message.js');
 
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) =>{
 
+  /*При подключении юзера отправляем ему сообщение от админа*/
   socket.emit('newMessage',
-    {from:'Администратор', text:'Добро пожаловать'}
+    generateMessage('Администратор','Добро пожаловать в наш уютный чатик')
   );
 
+  /*Так же отправляем через его сокет всем кроме него сообщение*/
   socket.broadcast.emit('newMessage',
-    {from:'Администратор',
-    text:'Новый пользователь присоеденился к комнате',
-    createdAt:new Date().getTime()}
+    generateMessage('Администратор','Новый пользователь присоеденился к комнате')
   );
 
+  /*В случае, если он ушел - сообщаем это в консоль*/
   socket.on('disconnect', () =>{
     console.log('Client has disconnected from server via socket...');
   });
 
+  /*В случае, если он написал, то отправить сообщение всем*/
   socket.on('createMessage', (message) =>{
-    message.createdAt = new Date().getTime();
-    io.emit('newMessageEvent',message);
+    io.emit('newMessage', generateMessage(message.from,message.text));
   });
 
 });

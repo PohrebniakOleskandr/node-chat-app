@@ -5,9 +5,8 @@ socket.on('connect', function(){
 });
 
 socket.on('disconnect', function(){
-  onsole.log('User is disconnected to server via socket...');
+  сonsole.log('User is disconnected to server via socket...');
 });
-
 
 socket.on('newMessage', function(message){
   console.log(message);
