@@ -13,24 +13,31 @@ socket.on('disconnect', function(){
 
 /*Если сервер оповестил о новом сообщении*/
 socket.on('newMessage', function(message){
+
   let formattedTime = moment(message.createdAt).format('H:mm');
-  let li = jQuery('<li></li>');
-  li.text(`${message.from}(${formattedTime}): ${message.text}`);
-  jQuery('#messages').append(li);
+  let template = jQuery('#message-template').html();
+  let html = Mustache.render(template, {
+    text: message.text,
+    from: message.from,
+    createdAt: formattedTime
+  });
+
+  jQuery('#messages').append(html);
 });
 
 
 /*Если сервер оповестил о новом гео-сообщении*/
 socket.on('newLocationMessage', function(message){
+
   let formattedTime = moment(message.createdAt).format('H:mm');
-  let li = jQuery('<li></li>');
-  let a = jQuery('<a target="_blank">My current location</a>');
+  let template = jQuery('#location-message-template').html();
+  let html = Mustache.render(template, {
+    text: message.text,
+    from: message.from,
+    url: message.url
+  });
 
-  a.attr('href', message.url);
-  li.text(`${message.from}(${formattedTime}): `);
-
-  li.append(a);
-  jQuery('#messages').append(li);
+  jQuery('#messages').append(html);
 });
 
 
@@ -40,6 +47,8 @@ jQuery('#message-form').on('submit', function(e) {
   e.preventDefault();
 
   let messageTextBox = jQuery('[name=message]');
+  if(messageTextBox.val()=='') return;
+  
   socket.emit('createMessage',
     {
       from:'User',
