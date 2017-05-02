@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 const port = process.env.PORT || 3000;
-const {generateMessage} = require('./utils/message.js');
+const {generateMessage,generateLocationMessage} = require('./utils/message.js');
 
 app.use(express.static(publicPath));
 
@@ -35,6 +35,11 @@ io.on('connection', (socket) =>{
     console.log('Client has sent a message to others');
     io.emit('newMessage', generateMessage(message.from,message.text));
     callback('A message is successfuly sent to the sever');
+  });
+
+  socket.on('createLocationMessage', (coords) =>{
+    io.emit('newLocationMessage', generateLocationMessage('Administrator',
+    coords.latitude,coords.longitude));
   });
 
 });
