@@ -13,19 +13,21 @@ socket.on('disconnect', function(){
 
 /*Если сервер оповестил о новом сообщении*/
 socket.on('newMessage', function(message){
+  let formattedTime = moment(message.createdAt).format('H:mm');
   let li = jQuery('<li></li>');
-  li.text(`${message.from}: ${message.text}`);
+  li.text(`${message.from}(${formattedTime}): ${message.text}`);
   jQuery('#messages').append(li);
 });
 
 
 /*Если сервер оповестил о новом гео-сообщении*/
 socket.on('newLocationMessage', function(message){
+  let formattedTime = moment(message.createdAt).format('H:mm');
   let li = jQuery('<li></li>');
   let a = jQuery('<a target="_blank">My current location</a>');
 
   a.attr('href', message.url);
-  li.text(`${message.from}: `);
+  li.text(`${message.from}(${formattedTime}): `);
 
   li.append(a);
   jQuery('#messages').append(li);
