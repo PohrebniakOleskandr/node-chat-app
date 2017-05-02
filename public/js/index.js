@@ -23,6 +23,7 @@ socket.on('newMessage', function(message){
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom()
 });
 
 
@@ -38,6 +39,7 @@ socket.on('newLocationMessage', function(message){
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom()
 });
 
 
@@ -48,7 +50,7 @@ jQuery('#message-form').on('submit', function(e) {
 
   let messageTextBox = jQuery('[name=message]');
   if(messageTextBox.val()=='') return;
-  
+
   socket.emit('createMessage',
     {
       from:'User',
@@ -83,3 +85,22 @@ locationButton.on('click', ()=> {
   );
 
 });
+
+
+function scrollToBottom(){
+
+  //selectors
+  let messages = jQuery('#messages');
+  let newMessage = messages.children('li:last-child');
+  //metrics
+  let clientHeight = messages.prop('clientHeight');
+  let scrollTop = messages.prop('scrollTop');
+
+  let scrollHeight = messages.prop('scrollHeight');
+  let newMessageHeight = newMessage.innerHeight();
+  let scrollBottom = scrollHeight - (clientHeight+scrollTop);
+
+  if (scrollBottom==0) return;
+  if(scrollBottom>0 && scrollBottom <= newMessageHeight + newMessage.prev().innerHeight())
+    messages.scrollTop(scrollHeight);
+}
