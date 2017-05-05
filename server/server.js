@@ -45,14 +45,21 @@ io.on('connection', (socket) =>{
   });
 
   socket.on('createMessage', (message,callback) =>{
-    console.log('Client has sent a message to others');
-    io.emit('newMessage', generateMessage(message.from,message.text));
-    callback('A message is successfuly sent to the sever');
+    let user = users.getUser(socket.id)
+
+    if(user)
+      io.to(user.room).emit('newMessage', generateMessage(user.name,message.text));
+
+    callback();
   });
 
   socket.on('createLocationMessage', (coords) =>{
-    io.emit('newLocationMessage', generateLocationMessage('Administrator',
-    coords.latitude,coords.longitude));
+
+    let user = users.getUser(socket.id)
+
+    if(user)
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name,
+        coords.latitude,coords.longitude));
   });
 
   socket.on('disconnect', () =>{
