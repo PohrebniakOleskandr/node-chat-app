@@ -8,29 +8,42 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 const port = process.env.PORT || 3000;
+
+const {Users} = require('./utils/users.js');
 const {generateMessage,generateLocationMessage} = require('./utils/message.js');
+const {isRealString} = require('./utils/validation.js');
+
+let users = new Users();
 
 app.use(express.static(publicPath));
 
+
 io.on('connection', (socket) =>{
 
-  console.log('We have new connection of client');
-  /*При подключении юзера отправляем ему сообщение от админа*/
-  socket.emit('newMessage',
-    generateMessage('Administrator','Welcome to our chat, a new client')
-  );
+  socket.on('join', (params,callback) => {
 
-  /*Так же отправляем через его сокет всем кроме него сообщение*/
-  socket.broadcast.emit('newMessage',
-    generateMessage('Administrator','A new client has connected to our chat')
-  );
+    if (!isRealString(params.name) || !isRealString(params.room)){
+      return callback('Name and room name  are required.');
+    }
 
-  /*В случае, если он ушел - сообщаем это в консоль*/
-  socket.on('disconnect', () =>{
-    console.log('Client has disconnected from server via socket');
+    socket.join(params.room);
+    users.removeUser(socket.id); //разобраться
+    users.addUser(socket.id,params.name,params.room);
+
+
+    io.to(params.room).emit('updateUserList',users.getUserList(params.room));
+
+    socket.emit('newMessage',
+      generateMessage(`Administrator`,`Welcome to our chat, ${params.name}`)
+    );
+
+    socket.broadcast.to(params.room).emit('newMessage',
+      generateMessage(`Administrator`,`${params.name} has connected to our chat`)
+    );
+
+    callback();
   });
 
-  /*В случае, если он написал, то отправить сообщение всем*/
   socket.on('createMessage', (message,callback) =>{
     console.log('Client has sent a message to others');
     io.emit('newMessage', generateMessage(message.from,message.text));
@@ -40,6 +53,19 @@ io.on('connection', (socket) =>{
   socket.on('createLocationMessage', (coords) =>{
     io.emit('newLocationMessage', generateLocationMessage('Administrator',
     coords.latitude,coords.longitude));
+  });
+
+  socket.on('disconnect', () =>{
+    let user = users.removeUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit('updateUserList',users.getUserList(user.room));
+      io.to(user.room).emit(
+        'newMessage',
+        generateMessage(
+          'Administrator',
+          `${user.name} has left the room`));
+    }
   });
 
 });

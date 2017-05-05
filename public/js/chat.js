@@ -1,13 +1,39 @@
+
 let socket = io();
 
 /*Срабатывает на io()*/
 socket.on('connect', function(){
-    console.log('A new connection to server is started');
+
+    let params = jQuery.deparam(window.location.search);
+    socket.emit('join', params, (err) =>{
+      if(err){
+        alert(err);
+        window.location.href = '/';
+      }
+      else {
+        console.log('No error');
+      }
+    });
+
 });
 
 /*Если сервер разорвал соединение*/
 socket.on('disconnect', function(){
   console.log('Server is down');
+});
+
+
+
+socket.on('updateUserList', (users)=> {
+  console.log(users);
+
+  let ul = jQuery('<ul></ul>');
+
+  users.forEach((user)=>{
+    ul.append(jQuery('<li></li>').text(user));
+  });
+
+  jQuery('#users').html(ul);
 });
 
 
